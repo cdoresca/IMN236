@@ -8,7 +8,8 @@ for i in range(16):
         points.append({
             "point": point,
             "X": i * 9,
-            "Y": j * 9
+            "Y": j * 9,
+            "Z": 0
         })
         point += 1
 
