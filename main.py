@@ -1,13 +1,11 @@
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
+from Util import Generate_Base_Points, Generate_Img_Points
 
-img = cv.imread('./Calibration_Images/test.jpg')
-img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-img_gray = np.float32(img_gray)
-
-corners = cv.goodFeaturesToTrack(img_gray, maxCorners=300, qualityLevel=0.01, minDistance=50)
-corners = np.int32(corners)
+#Generate_Base_Points()
+img = cv.imread('test.jpg')
+corners = Generate_Img_Points(img)
 
 for corner in corners:
     x, y = corner.ravel()
@@ -15,7 +13,6 @@ for corner in corners:
 
 img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
 
-# Show the result
 plt.imshow(img_rgb)
 plt.axis('off')
 plt.show()
