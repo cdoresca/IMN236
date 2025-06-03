@@ -10,6 +10,9 @@ def Save_As_Json(array, file_name, path="./Points/"):
     with open(path+file_name, "w") as f:
         json.dump(data, f, indent=3)
 
+def Open_Json(file_name, path="./Points/"):
+    with open(path+file_name, "r") as f:
+        return json.load(f)
 
 def Generate_Base_Points(file_name = "Base_Points_Grid.json"):
     points = []
