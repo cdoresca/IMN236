@@ -57,8 +57,10 @@ y_dist=(pts_calib[:,1]-On)*Sy
 A=[]
 b=[]
 
-#index = np.random.randint(256,size=2) 
+#index = np.random.randint(256,size=5)
+#index = np.sort(index)
 index=[0,5,48,63,112]
+print(index)
 
 for i in index:
     A.append([y_dist[i]*pts_orig[i][0],y_dist[i]*pts_orig[i][1],y_dist[i],-x_dist[i]*pts_orig[i][0],-x_dist[i]*pts_orig[i][1]])
@@ -121,8 +123,10 @@ R=np.array([L1,L2,L3])
 A=[]
 b=[]
 
-#index = np.random.randint(256,size=2) 
+#index = np.random.choice(index,size=2,replace=False) 
 index=[48,112]
+#index = np.sort(index)
+print(index)
 for i in index:
     Y=R[1][0]*pts_orig[i][0]+R[1][1]*pts_orig[i][1]+Ty
     W=R[2][0]*pts_orig[i][0]+R[2][1]*pts_orig[i][1]

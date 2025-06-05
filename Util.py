@@ -88,7 +88,7 @@ def Sort_By_Columns(points, tolerence = 15):
 def calculer_erreurs(params,R,T,pts_monde,xd,r):
     e = []
     for i, (x,y) in enumerate(pts_monde):
-        e.append((xd[i] * (1 + params[0] * r[i]) * (R[2][0] * x + R[2][1] * y + params[2]) - (R[0][0] * x + R[0][1] * y + T[0])) * params[1])
+        e.append(xd[i] * (1 + params[0] * r[i]) * (R[2][0] * x + R[2][1] * y + params[2]) - (R[0][0] * x + R[0][1] * y + T[0]) * params[1])
     return np.array(e)   
 
 def jacobien(params,R,T,pts_monde,xd,r):
@@ -126,7 +126,7 @@ def Levenberg_Marquardt(p0,R,T,pts_monde,xd,r):
     while not find:
         k += 1
         h = np.linalg.inv(A + u * np.eye(len(p))) @ (-1 * g)
-        print(h)
+        
         if np.linalg.norm(h) <= 1e-6 * np.linalg.norm(p):
             find = True 
 
