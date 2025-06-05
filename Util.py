@@ -84,3 +84,70 @@ def Sort_By_Columns(points, tolerence = 15):
     for group_x in sorted(columns.keys()):
         sorted_by_columns.extend(columns[group_x])
     return sorted_by_columns
+
+def calculer_erreurs(params,R,T,pts_monde,xd,r):
+    e = []
+    for i, (x,y) in enumerate(pts_monde):
+        e.append((xd[i] * (1 + params[0] * r[i]) * (R[2][0] * x + R[2][1] * y + params[2]) - (R[0][0] * x + R[0][1] * y + T[0])) * params[1])
+    return np.array(e)   
+
+def jacobien(params,R,T,pts_monde,xd,r):
+
+    n_params = len(params)
+
+    e0 = calculer_erreurs(params,R,T,pts_monde,xd, r)
+
+    J = np. zeros((len(e0),n_params))
+
+    for j in range(n_params):
+        delta = np.zeros_like(params)
+        delta[j]=0.000001
+        e1 = calculer_erreurs(params + delta,R,T,pts_monde,xd,r)
+        J[:,j] = (e1 - e0) / 0.000001
+    
+    return J
+
+def Levenberg_Marquardt(p0,R,T,pts_monde,xd,r):
+
+    k = 0
+    v = 2
+    
+    p = p0.copy()
+
+    J = jacobien(p,R,T,pts_monde,xd,r)
+    e = calculer_erreurs(p,R,T,pts_monde,xd,r)
+    A = J.T @ J
+    g = J.T @ e
+
+    find = max(np.abs(g)) <= 1e-6
+    
+    u= 1e-3 * np.max(A.diagonal())
+
+    while not find:
+        k += 1
+        h = np.linalg.inv(A + u * np.eye(len(p))) @ (-1 * g)
+        print(h)
+        if np.linalg.norm(h) <= 1e-6 * np.linalg.norm(p):
+            find = True 
+
+        else:
+            p_new = p + h
+            e_new = calculer_erreurs(p_new,R,T,pts_monde,xd,r)
+            rho = float((np.linalg.norm(e)**2 - np.linalg.norm(e_new)**2) / (h.T @ (u * h - g)))
+
+            if rho > 0:
+                p=p_new
+                J = jacobien(p,R,T,pts_monde,xd,r)
+                e = calculer_erreurs(p,R,T,pts_monde,xd,r)
+                A = J.T @ J
+                g = J.T @ e
+                find = max(np.abs(g)) <= 1e-6
+                u *= max(1/3, 1 - (2 * rho - 1)**3)
+                v=2
+
+            else:
+
+                u *= v
+                v *= 2
+    
+    return p
