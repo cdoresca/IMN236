@@ -84,16 +84,20 @@ R = R_cam_g.T @ R_cam_d
 T = R_cam_g.T @ (T_cam_d - T_cam_g)
 
 e1 = T / np.linalg.norm(T)
-e2 = np.array([ -T[1], T[0], 0]) / np.linalg.norm([-T[1],T[0]])
+e2 = np.array([ -T[1], T[0], 0]) / np.sqrt(T[0]**2 + T[1]**2)
 e3 = np.cross(e1,e2)
 
+
 Rg = np.array([e1,e2,e3])
-Rd = R.T @ Rg
+Rd = R @ Rg
 
 
-def rectification_inverse(img,O,S,z):
-    img_rect = np.zeros_like(img)
-
+def rectification_inverse(img,O,S,z,R):
+    
+    height, width = img.shape[:2]
+ 
+    m = np.zeros((height, width), dtype=np.float32)
+    n = np.zeros((height, width), dtype=np.float32)
 
     for i in range(img.shape[1]):
         for j in range(img.shape[0]):
@@ -102,46 +106,37 @@ def rectification_inverse(img,O,S,z):
             y = (j-O[1]) * S[1]
 
             q = np.array([x,y,z])
-            Q = Rg.T @ q
+            
+            Q = R.T @ q
+            
             p = (z / Q[2]) * Q
 
-            m = (p[0] / S[0]) + O[0]
-            n = (p[1] / S[1]) + O[1]
-            
-            
-            img_rect[j,i] = ut.bilinear_interpolation(img,m,n)
+            m[j,i] = (p[0] / S[0]) + O[0]
+            n[j,i] = (p[1] / S[1]) + O[1]
+                      
+    img_rect = cv.remap(img, m, n, interpolation=cv.INTER_LINEAR, borderMode=cv.BORDER_CONSTANT)
 
     return img_rect
 
 
 
 
-threads = []
 
-imgG = ut.CustomThread(target=rectification_inverse,args=(imageGauche,O_cam_g,S_cam_g,zprime_cam_g,))
-imgD = ut.CustomThread(target=rectification_inverse,args=(imageDroite,O_cam_d,S_cam_d,zprime_cam_d,))
-
-threads.extend([imgG,imgD])
-
-for t in threads:
-    t.start()
-
-
-imgFinalD =imgD.join() 
-imgFinalG = imgG.join()
+imgFinalD = rectification_inverse(imageDroite,O_cam_d,S_cam_d,zprime_cam_d,Rd)
+imgFinalG = rectification_inverse(imageGauche,O_cam_g,S_cam_g,zprime_cam_g,Rg)
 
 cv.imwrite('imgD.png',imgFinalD)
 cv.imwrite('imG.png',imgFinalG)
 
-# Afficher l'image rectifiée
+
 plt.imshow(imgFinalG, cmap='gray')
 plt.title('Image Gauche Rectifiée')
-plt.axis('off')  # Ne pas afficher les axes
+plt.axis('off')  
 plt.show()
 
 
-# Afficher l'image rectifiée
 plt.imshow(imgFinalD, cmap='gray')
 plt.title('Image Droite Rectifiée')
-plt.axis('off')  # Ne pas afficher les axes
+plt.axis('off')
 plt.show()
+
