@@ -1,6 +1,7 @@
 import json
 import cv2 as cv
 import numpy as np
+from threading import Thread
 from collections import defaultdict
 
 
@@ -106,51 +107,34 @@ def Sort_By_Columns(points, tolerence = 15):
     return sorted_by_columns
 
 def bilinear_interpolation(image, x, y):
-    """
-    Applique l'interpolation bilinéaire pour obtenir la valeur d'un pixel à la position (x, y)
     
-    :param image: L'image sous forme de matrice (grayscale ou RGB)
-    :param x: Coordonnée x du pixel à interpoler
-    :param y: Coordonnée y du pixel à interpoler
-    
-    :return: La valeur interpolée au point (x, y)
-    """
-    x1 = int(np.floor(x))  # Coordonnée x du pixel supérieur gauche
-    y1 = int(np.floor(y))  # Coordonnée y du pixel supérieur gauche
-    x2 = x1 + 1           # Coordonnée x du pixel supérieur droit
-    y2 = y1 + 1           # Coordonnée y du pixel inférieur gauche
+    x1 = int(np.floor(x))
+    y1 = int(np.floor(y))
+    x2 = x1 + 1           
+    y2 = y1 + 1       
 
-    # Taille de l'image
     height, width = image.shape[:2]
 
-    # S'assurer que les indices sont dans les limites de l'image
     if x1 < 0 or x2 >= width or y1 < 0 or y2 >= height:
-        return 0  # Si l'index est hors limites, on retourne une valeur par défaut (par exemple 0)
+        return 0
 
-    # Valeurs des pixels aux coins du rectangle
     Q11 = image[y1, x1]
     Q21 = image[y1, x2]
     Q12 = image[y2, x1]
     Q22 = image[y2, x2]
 
-    # Interpolation sur x (horizontalement)
     R1 = Q11 * (x2 - x) / (x2 - x1) + Q21 * (x - x1) / (x2 - x1)
     R2 = Q12 * (x2 - x) / (x2 - x1) + Q22 * (x - x1) / (x2 - x1)
 
-    # Interpolation sur y (verticalement)
     pixel_value = R1 * (y2 - y) / (y2 - y1) + R2 * (y - y1) / (y2 - y1)
 
     return pixel_value
 
-from threading import Thread
-
 class CustomThread(Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, verbose=None):
-        # Initializing the Thread class
         super().__init__(group, target, name, args, kwargs)
         self._return = None
 
-    # Overriding the Thread.run function
     def run(self):
         if self._target is not None:
             self._return = self._target(*self._args, **self._kwargs)

@@ -25,7 +25,7 @@ def corners(img):
 img = cv.imread('test.jpg')
 
 #Generate_Base_Points()
-#corners(img)
+#corners(img)``
 
 z_prime = 26.0  # focal length in mm
 Sx = 0.0014    # pixel size x in mm/pixel
