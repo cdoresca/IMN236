@@ -17,6 +17,13 @@ for i in range(0, len(grays), 2):
 
     res[img < inv] += bit_mask
 
+
+ET = np.std(res)
+mean = np.mean(res)
+
+res[res < mean -2*ET] = mean -2*ET
+res[res > mean +2*ET] = mean +2*ET
+
 res = cv.normalize(res, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
 plt.imshow(res, cmap='gray')
