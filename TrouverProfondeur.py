@@ -2,6 +2,8 @@ import numpy as np
 from tqdm import tqdm
 import cv2
 import matplotlib.pyplot as plt
+import cv2.ximgproc as xip
+
 
 def ncc(window1: np.ndarray, window2: np.ndarray) -> float:
     """
@@ -75,13 +77,15 @@ def disparity_map_ncc(img_left: np.ndarray, img_right: np.ndarray, window_size: 
 
 img_left = cv2.imread("images/im0.png", cv2.IMREAD_GRAYSCALE)
 img_right = cv2.imread("images/im1.png", cv2.IMREAD_GRAYSCALE)
+kernel = np.ones((5,5),np.float32)/25
 
-# Calculer la carte de disparité
 disp_map = disparity_map_ncc(img_left, img_right, window_size=5, max_disparity=64)
 
-cv2.imwrite("output.png", disp_map.astype(np.uint8))
+disp_map_filtered = cv2.medianBlur(disp_map.astype(np.uint8), 5)
+disp_map_filtered = cv2.bilateralFilter(disp_map_filtered, 9, 75, 75)
 
-# Afficher la carte de disparité
+cv2.imwrite("output.png", disp_map_filtered.astype(np.uint8))
+
 plt.imshow(disp_map, cmap='gray')
 plt.colorbar(label="Disparité (pixels)")
 plt.show()
